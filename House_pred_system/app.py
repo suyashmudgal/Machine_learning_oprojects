@@ -162,7 +162,7 @@ def main():
             use_container_width=True
         )
 
-        # ---------------- Details ----------------
+        
         st.subheader("📋 Prediction Summary")
 
         col1, col2 = st.columns(2)
