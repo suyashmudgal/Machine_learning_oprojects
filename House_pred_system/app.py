@@ -102,7 +102,7 @@ def main():
         step=100
     )
 
-    # ---------------- Prediction ----------------
+   
     if st.button("Predict Price"):
 
         prediction = model.predict([[size]])[0]
