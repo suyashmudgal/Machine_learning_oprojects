@@ -111,7 +111,7 @@ def main():
             f"💰 Predicted House Price: ₹{prediction:,.2f}"
         )
 
-        # Generate data for visualization
+        
         df = generate_house_data()
 
         # Scatter Plot + Regression Line
