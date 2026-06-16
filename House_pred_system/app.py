@@ -114,7 +114,7 @@ def main():
         
         df = generate_house_data()
 
-        # Scatter Plot + Regression Line
+       
         fig = px.scatter(
             df,
             x="Size",
