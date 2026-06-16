@@ -143,7 +143,7 @@ def main():
             annotation_text=f"Size = {size}"
         )
 
-        # Horizontal Line
+        
         fig.add_hline(
             y=prediction,
             line_dash="dash",
