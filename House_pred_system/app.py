@@ -123,7 +123,7 @@ def main():
             trendline="ols"
         )
 
-        # Predicted Point
+     
         fig.add_scatter(
             x=[size],
             y=[prediction],
