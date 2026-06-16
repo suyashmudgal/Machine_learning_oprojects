@@ -135,7 +135,7 @@ def main():
             name="Predicted House"
         )
 
-        # Vertical Line
+       
         fig.add_vline(
             x=size,
             line_dash="dash",
