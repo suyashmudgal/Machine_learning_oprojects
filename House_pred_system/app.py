@@ -173,7 +173,7 @@ def main():
         with col2:
             st.info(f"💰 Estimated Price: ₹{prediction:,.2f}")
 
-        # ---------------- Dataset Preview ----------------
+        
         with st.expander("📄 View Sample Dataset"):
             st.dataframe(df.head(20))
 
