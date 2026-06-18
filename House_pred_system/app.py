@@ -93,7 +93,7 @@ def main():
 
     st.divider()
 
-    # ---------------- User Input ----------------
+    #
     size = st.slider(
         "Select House Size (sq ft)",
         min_value=1000,
