@@ -1,29 +1,16 @@
-#include<iostream>
-using namespace std;
-
-int main()
-{
-    int arr[] = {5,7,10,12,15};
-    int n = sizeof(arr)/sizeof(arr[0]);
-    int target = 22;
-    int i=0,j=n-1;
-    while(i<j)
-    {
-        if(arr[i]+arr[j]==target)
-        {
-            cout<<arr[i]<<" "<<arr[j]<<endl;
-            i++;
-            j--;
-        }
-        else if(arr[i]+arr[j]>target)
-        {
-            j--;
-        }
-        else
-        {
-            i++;
-        }
+class Solution {
+public:
+    double angleClock(int hour, int minutes) {
+        // 1 hour = 30 degrees, 1 minute khisakne par hour hand 0.5 degree chalta hai
+        double hourAngle = (hour % 12) * 30.0 + minutes * 0.5;
+        
+        // 1 minute = 6 degrees
+        double minuteAngle = minutes * 6.0;
+        
+        // Absolute difference
+        double angle = abs(hourAngle - minuteAngle);
+        
+        // Smaller angle chahiye
+        return min(angle, 360.0 - angle);
     }
-    return 0;
-}
-
+};
