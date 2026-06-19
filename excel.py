@@ -948,13 +948,13 @@ header_row(ws5, 2, sc_cols, sc_fills, sc_fonts)
 for i, w in enumerate([6,28,20,18,14,14,16,18,18], 1):
     set_col_width(ws5, get_column_letter(i), w)
 
-# Build score table
+
 scored = []
 prob_map = {"Very High": 25, "High": 20, "Medium": 13, "Low": 6}
 for c in companies:
     name, cat, subcat, prob, roles, sal, locs, fresh, exp, url, signal, ps = c
     hp = prob_map.get(prob, 13)
-    # Growth score derived from priority score
+    
     total_str = int(ps)
     gs = min(20, max(0, int((total_str - hp) * 20 / 75)))
     fs = min(20, max(0, int(total_str * 0.20)))
