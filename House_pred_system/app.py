@@ -32,9 +32,6 @@ def generate_house_data(n_samples=500):
     })
 
 
-# ----------------------------------
-# Train Model
-# ----------------------------------
 @st.cache_resource
 def train_model():
 
