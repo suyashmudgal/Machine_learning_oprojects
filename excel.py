@@ -997,7 +997,7 @@ for rank, s in enumerate(scored, 1):
 
 ws5.auto_filter.ref = f"A2:{get_column_letter(9)}{len(scored)+2}"
 
-# Save
+
 out = "output/India_Tech_Hiring_Intelligence_2026.xlsx"
 wb.save(out)
 print(f"Excel saved: {out}")
