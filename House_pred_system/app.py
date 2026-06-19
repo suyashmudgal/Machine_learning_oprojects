@@ -82,7 +82,6 @@ def main():
 
     model, metrics = train_model()
 
-    # ---------------- Metrics ----------------
     st.subheader("📊 Model Performance")
 
     col1, col2, col3 = st.columns(3)
