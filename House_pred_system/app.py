@@ -11,9 +11,7 @@ from sklearn.metrics import (
     r2_score
 )
 
-# ----------------------------------
-# Generate House Dataset
-# ----------------------------------
+
 def generate_house_data(n_samples=500):
 
     np.random.seed(50)
