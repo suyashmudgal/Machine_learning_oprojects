@@ -64,9 +64,7 @@ def train_model():
     return model, metrics
 
 
-# ----------------------------------
-# Main App
-# ----------------------------------
+
 def main():
 
     st.set_page_config(
