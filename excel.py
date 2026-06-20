@@ -898,7 +898,7 @@ header_row(ws4, 2, tr_cols, tr_fills, tr_fonts)
 for i, w in enumerate([4,24,22,14,10,14,14,12,14,12,14,30], 1):
     set_col_width(ws4, get_column_letter(i), w)
 
-# Pre-fill 50 rows with top companies
+
 top50 = [c[0] for c in companies[:50]]
 statuses = ["Not Applied","Applied","OA Done","Tech 1 Done","Tech 2 Done","HR Done","Offer","Rejected","Waitlisted"]
 for i, comp in enumerate(top50, 1):
