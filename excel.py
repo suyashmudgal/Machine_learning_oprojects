@@ -913,7 +913,7 @@ for i, comp in enumerate(top50, 1):
         cell.font = font(False, 9)
         cell.fill = fill(bg)
 
-# Extra blank rows for user
+
 for i in range(51, 201):
     row_num = i + 2
     ws4.row_dimensions[row_num].height = 20
