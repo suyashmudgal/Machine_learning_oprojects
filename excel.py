@@ -925,9 +925,6 @@ for i in range(51, 201):
 
 ws4.auto_filter.ref = f"A2:L202"
 
-# ════════════════════════════════════════════════════════════════════════════
-# SHEET 5 — HIRING PRIORITY SCORE
-# ════════════════════════════════════════════════════════════════════════════
 ws5 = wb.create_sheet("🏆 Hiring Priority Score")
 ws5.sheet_view.showGridLines = False
 ws5.freeze_panes = "A3"
