@@ -272,3 +272,156 @@ if uploaded_file is not None:
             height=400
         )
         st.plotly_chart(fig_box, use_container_width=True)
+        # -------- TAB 4: NDVI / Indices --------
+    with tab4:
+        st.subheader("Vegetation & Spectral Indices")
+        
+        if n_bands < 2:
+            st.warning("Need at least 2 bands to calculate indices.")
+        else:
+            idx_col1, idx_col2 = st.columns(2)
+            
+            with idx_col1:
+                st.markdown("**NDVI (Normalized Difference Vegetation Index)**")
+                red_band = st.selectbox("Red Band", range(1, n_bands+1), index=0) - 1
+                nir_band = st.selectbox("NIR Band", range(1, n_bands+1), index=min(1, n_bands-1)) - 1
+                
+                red = arr[red_band].astype(np.float32)
+                nir = arr[nir_band].astype(np.float32)
+                
+                # Calculate NDVI
+                ndvi = np.divide(nir - red, nir + red + 1e-8, out=np.zeros_like(nir), where=(nir + red) != 0)
+                ndvi = np.clip(ndvi, -1, 1)
+                
+                fig_ndvi = px.imshow(
+                    ndvi, 
+                    color_continuous_scale='RdYlGn',
+                    title=f"NDVI (Red: Band {red_band+1}, NIR: Band {nir_band+1})",
+                    zmin=-1, zmax=1
+                )
+                fig_ndvi.update_layout(height=500)
+                st.plotly_chart(fig_ndvi, use_container_width=True)
+                
+                # NDVI stats
+                ndvi_mean = np.mean(ndvi)
+                ndvi_health = "Healthy 🌳" if ndvi_mean > 0.4 else "Moderate 🌿" if ndvi_mean > 0.2 else "Sparse/Stressed 🍂"
+                st.metric("Average NDVI", f"{ndvi_mean:.3f}", ndvi_health)
+            
+            with idx_col2:
+                st.markdown("**NDWI (Water Index)**")
+                if n_bands >= 2:
+                    green_band = st.selectbox("Green Band (for NDWI)", range(1, n_bands+1), index=min(1, n_bands-1)) - 1
+                    green = arr[green_band].astype(np.float32)
+                    ndwi = np.divide(green - nir, green + nir + 1e-8, out=np.zeros_like(green), where=(green + nir) != 0)
+                    ndwi = np.clip(ndwi, -1, 1)
+                    
+                    fig_ndwi = px.imshow(
+                        ndwi,
+                        color_continuous_scale='Blues',
+                        title=f"NDWI - Water Index (Green: Band {green_band+1}, NIR: Band {nir_band+1})",
+                        zmin=-1, zmax=1
+                    )
+                    fig_ndwi.update_layout(height=500)
+                    st.plotly_chart(fig_ndwi, use_container_width=True)
+                
+                # Custom Index
+                st.markdown("**🧪 Custom Index Calculator**")
+                num_band = st.selectbox("Numerator Band", range(1, n_bands+1), index=min(1, n_bands-1)) - 1
+                den_band = st.selectbox("Denominator Band", range(1, n_bands+1), index=0) - 1
+                
+                num = arr[num_band].astype(np.float32)
+                den = arr[den_band].astype(np.float32)
+                custom_idx = np.divide(num - den, num + den + 1e-8, out=np.zeros_like(num), where=(num + den) != 0)
+                
+                fig_custom = px.imshow(
+                    custom_idx,
+                    color_continuous_scale='Viridis',
+                    title=f"Custom Index: (Band {num_band+1} - Band {den_band+1}) / (Band {num_band+1} + Band {den_band+1})"
+                )
+                fig_custom.update_layout(height=400)
+                st.plotly_chart(fig_custom, use_container_width=True)
+    
+    # -------- TAB 5: Spectral Profile --------
+    with tab5:
+        st.subheader("Spectral Profile Analysis")
+        
+        prof_col1, prof_col2 = st.columns([1, 3])
+        
+        with prof_col1:
+            st.markdown("**Enter coordinates:**")
+            x_coord = st.number_input("X Coordinate", min_value=0, max_value=width-1, value=width//2)
+            y_coord = st.number_input("Y Coordinate", min_value=0, max_value=height-1, value=height//2)
+            
+            st.markdown("**Pixel Values**")
+            pixel_vals = [arr[b, y_coord, x_coord] for b in range(n_bands)]
+            for b, val in enumerate(pixel_vals):
+                st.text(f"Band {b+1}: {val}")
+        
+        with prof_col2:
+            # Spectral curve
+            fig_spec = go.Figure()
+            fig_spec.add_trace(go.Scatter(
+                x=[f"Band {i+1}" for i in range(n_bands)],
+                y=pixel_vals,
+                mode='lines+markers',
+                line=dict(color='green', width=3),
+                marker=dict(size=10),
+                name=f"Pixel ({x_coord}, {y_coord})"
+            ))
+            
+            # Add average for comparison
+            avg_vals = [np.mean(arr[b]) for b in range(n_bands)]
+            fig_spec.add_trace(go.Scatter(
+                x=[f"Band {i+1}" for i in range(n_bands)],
+                y=avg_vals,
+                mode='lines',
+                line=dict(color='red', width=2, dash='dash'),
+                name="Image Average"
+            ))
+            
+            fig_spec.update_layout(
+                title=f"Spectral Profile at ({x_coord}, {y_coord})",
+                xaxis_title="Band",
+                yaxis_title="Reflectance / DN Value",
+                height=500,
+                hovermode='x unified'
+            )
+            st.plotly_chart(fig_spec, use_container_width=True)
+        
+        # 2D spectral heatmap (all pixels, sampled)
+        st.markdown("**Spectral Heatmap (Sampled Pixels)**")
+        sample_step = max(1, min(height, width) // 100)
+        sampled = arr[:, ::sample_step, ::sample_step]  # (bands, h', w')
+        n_samples = sampled.shape[1] * sampled.shape[2]
+        spectral_matrix = sampled.reshape(n_bands, n_samples).T  # (samples, bands)
+        
+        fig_heatmap = px.imshow(
+            spectral_matrix[:500],
+            labels=dict(x="Band", y="Pixel Sample", color="Value"),
+            title="Spectral Signatures of Sampled Pixels",
+            aspect='auto'
+        )
+        fig_heatmap.update_layout(height=400)
+        st.plotly_chart(fig_heatmap, use_container_width=True)
+
+else:
+    # Empty state
+    st.markdown("---")
+    col1, col2, col3 = st.columns([1, 2, 1])
+    with col2:
+        st.info("👆 Upload a satellite image to begin analysis.")
+        
+        st.markdown("""
+        **Supported Features:**
+        - 📤 Upload PNG, JPG, or TIFF satellite imagery
+        - 🖼️ Interactive viewer with true/false color composites
+        - 📊 Per-band statistics (min, max, mean, std)
+        - 📉 Histograms and box plots
+        - 🌿 NDVI and NDWI vegetation/water indices
+        - 🔬 Pixel-level spectral profiles
+        - 🧪 Custom index calculator
+        """)
+        
+        st.markdown("**Recommended Test Data:**")
+        st.markdown("- [Landsat/Sentinel-2 from USGS EarthExplorer](https://earthexplorer.usgs.gov/)")
+        st.markdown("- [Copernicus Open Access Hub](https://scihub.copernicus.eu/)")
