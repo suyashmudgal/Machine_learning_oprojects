@@ -74,3 +74,50 @@ def load_image(uploaded_file):
         'name': uploaded_file.name,
         'mode': image.mode
     }
+    def normalize_for_display(arr):
+    """Normalize array to 0-255 for display."""
+    arr = arr.astype(np.float32)
+    min_val = np.percentile(arr, 2)
+    max_val = np.percentile(arr, 98)
+    arr = np.clip((arr - min_val) / (max_val - min_val + 1e-8), 0, 1)
+    return (arr * 255).astype(np.uint8)
+
+if uploaded_file is not None:
+    with st.spinner("🔄 Processing image..."):
+        try:
+            data = load_image(uploaded_file)
+        except Exception as e:
+            st.error(f"Error loading image: {e}")
+            st.stop()
+    
+    arr = data['array']  # (bands, h, w)
+    display_img = data['display']
+    n_bands = arr.shape[0]
+    height, width = arr.shape[1], arr.shape[2]
+    
+    # ==================== OVERVIEW METRICS ====================
+    st.markdown("---")
+    st.subheader("📊 Image Overview")
+    
+    col1, col2, col3, col4, col5 = st.columns(5)
+    with col1:
+        st.metric("Width", f"{width:,} px")
+    with col2:
+        st.metric("Height", f"{height:,} px")
+    with col3:
+        st.metric("Bands", n_bands)
+    with col4:
+        st.metric("Data Type", str(arr.dtype))
+    with col5:
+        st.metric("Mode", data['mode'])
+    
+    st.info("ℹ️ Running in **PIL-only mode** — no GDAL required. For GeoTIFF metadata, use a local Python environment with rasterio installed.")
+    
+    # ==================== TABS ====================
+    tab1, tab2, tab3, tab4, tab5 = st.tabs([
+        "🖼️ Image Viewer", 
+        "📈 Band Statistics", 
+        "📉 Histograms", 
+        "🌿 NDVI / Indices", 
+        "🔬 Spectral Profile"
+    ])
