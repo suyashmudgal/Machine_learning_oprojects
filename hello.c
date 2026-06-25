@@ -1,111 +1,147 @@
+/* LogisticRegression.c | Only one feature set as input */
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
+#include <time.h>
+#include <float.h>
 
-int Min(int x, int y)
+#define BIAS 0.0
+#define LR 0.01
+#define EPOCHS 1000
+
+double *weights(int numberOfWeights)
 {
-    if (x > y)
+    double min_value = -1.0;
+    double max_value = 1.0;
+
+    srand(time(0));
+
+    double *weightsArray = (double *)malloc(numberOfWeights * sizeof(double));
+
+    if (weightsArray == NULL)
     {
-        return y;
+        return NULL;
     }
-    else
+
+    for (int i = 0; i < numberOfWeights; i++)
     {
-        return x;
+        double randomVal = ((double)rand() / RAND_MAX);                    // [0,1]
+        weightsArray[i] = min_value + randomVal * (max_value - min_value); // [-1,1]
     }
+
+    return weightsArray;
 }
 
-double Mean(double X[], int size)
+double LinearCombination(double *X, double *weights, int length)
 {
+    if (X == NULL || weights == NULL || length <= 0)
+    {
+        return -1.0;
+    }
     double sum = 0;
 
-    for (int i = 0; i < size; i++)
+    for (int i = 0; i < length; i++)
     {
-        sum += X[i];
+        sum += (X[i] * weights[i]);
     }
 
-    return sum / size;
+    return sum + BIAS;
 }
 
-double Covariance(double X[], int sizeX, double Y[], int sizeY)
+double SigmoidFunction(double LinearCombination)
 {
-    double meanX = Mean(X, sizeX);
-    double meanY = Mean(Y, sizeY);
+    double predictedOutput = 1.0 / (1.0 + exp(-LinearCombination));
 
-    double sum = 0;
-    int size = Min(sizeX, sizeY);
+    return predictedOutput;
+}
 
-    for (int i = 0; i < size; i++)
+double Loss(double actualOutput, double predictedOutput)
+{
+    if (predictedOutput < DBL_EPSILON)
     {
-        sum += (X[i] - meanX) * (Y[i] - meanY);
+        predictedOutput = DBL_EPSILON;
     }
-    return sum / size;
-}
-
-double DifferenceFromMean(double X[], int size, int power)
-{
-    double mean = Mean(X, size);
-
-    double differenceSum = 0;
-
-    for (int i = 0; i < size; i++)
+    if (predictedOutput > 1.0 - DBL_EPSILON)
     {
-        differenceSum += pow((X[i] - mean), power);
+        predictedOutput = 1.0 - DBL_EPSILON;
     }
-    return differenceSum;
+
+    double loss = actualOutput * log(predictedOutput) + (1.0 - actualOutput) * log(1.0 - predictedOutput);
+
+    return -loss;
 }
 
-double *LinearRegression(double X[], int sizeX, double Y[], int sizeY)
+double weightGradient(double actualOutput, double predictedOutput, double x)
 {
-    double *parameters = (double *)malloc(2 * sizeof(double));
-    double slope = (Covariance(X, sizeX, Y, sizeY)) / (DifferenceFromMean(X, sizeX, 2));
+    double gradient = (predictedOutput - actualOutput) * x;
 
-    double intercept = Mean(Y, sizeY) - slope * Mean(X, sizeX);
+    return gradient;
+}
 
-    parameters[0] = slope;
-    parameters[1] = intercept;
+double biasGradient(double actualOutput, double predictedOutput, double x)
+{
+    double gradient = predictedOutput - actualOutput;
 
-    return parameters;
+    return gradient;
+}
+
+double weightUpdate(double weight, double weightGradient)
+{
+    return weight - LR * weightGradient;
+}
+
+double biasUpdate(double bias, double biasGradient)
+{
+    return bias - LR * biasGradient;
 }
 
 int main()
 {
-    printf("Enter the number of elements in X: ");
-    int sizeX;
-    scanf("%d", &sizeX);
-    double *X = (double *)malloc(sizeX * sizeof(double));
-    if (X == NULL)
-    {
-        printf("Memory Allocation Failed");
-        return 1;
-    }
-    printf("Enter the Elements of X:\n ");
-    for (int i = 0; i < sizeX; i++)
-    {
-        scanf("%lf", &X[i]);
-    }
+    double X_train[4] = {0.0, 0.0, 1.0, 1.0};
+    double Y_train[4] = {0.0, 1.0, 0.0, 1.0};
 
-    printf("Enter the number of elements in Y: ");
-    int sizeY;
-    scanf("%d", &sizeY);
-    double *Y = (double *)malloc(sizeY * sizeof(double));
-    if (Y == NULL)
+    int samples = 4;
+
+    double *w = weights(1);
+    double bias = BIAS;
+
+    if (w == NULL)
     {
-        printf("Memory Allocation Failed");
         return 1;
     }
 
-    printf("Enter the Elements of Y:\n ");
-    for (int i = 0; i < sizeY; i++)
+    for (int epoch = 0; epoch < EPOCHS; epoch++)
     {
-        scanf("%lf", &Y[i]);
+        double total_loss = 0.0;
+
+        for (int i = 0; i < samples; i++)
+        {
+            double x = X_train[i];
+            double y = Y_train[i];
+
+            double z = LinearCombination(&x, w, 1);
+            double pred = SigmoidFunction(z);
+            double loss = Loss(y, pred);
+
+            total_loss += loss;
+
+            double w_grad = weightGradient(y, pred, x);
+            double b_grad = biasGradient(y, pred, x);
+
+            w[0] = weightUpdate(w[0], w_grad);
+            bias = biasUpdate(bias, b_grad);
+
+            if (epoch % 100 == 0)
+            {
+                printf("Epoch %d : Loss = %f\n", epoch, total_loss / samples);
+            }
+        }
     }
+    printf("Final weights: %f\n", w[0]);
+    printf("Final bias: %f\n", bias);
 
-    double *parameters = LinearRegression(X, sizeX, Y, sizeY);
-
-    printf("y = %lf * x + %lf", parameters[0], parameters[1]);
-
-    free(X);
-    free(Y);
+    free(w);
 
     return 0;
 }
