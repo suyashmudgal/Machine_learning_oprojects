@@ -16,10 +16,10 @@ public:
         int ans = arr[0];
         
         for (int i = 1; i < n; i++) {
-           
+            // pehle purana max_ending_here store karo (kyunki baad mein use hoga)
             int prev_max_ending_here = max_ending_here;
             
-            
+            // normal Kadane update
             max_ending_here = max(arr[i], max_ending_here + arr[i]);
             
             // with deletion update:
