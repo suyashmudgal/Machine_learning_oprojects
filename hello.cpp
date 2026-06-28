@@ -1,13 +1,16 @@
-class Solution {
-public:
-    int maximumElementAfterDecrementingAndRearranging(vector<int>& arr) {
-        sort(arr.begin(), arr.end());
-        arr[0] = 1;
-        for (int i = 1; i < arr.size(); ++i) {
-            if (arr[i] > arr[i - 1] + 1) {
-                arr[i] = arr[i - 1] + 1;
-            }
+#include <vector>
+#include <stack>
+using namespace std;
+
+vector<int> nextGreaterElement(vector<int>& a, int n) {
+    vector<int> ans(n, -1);
+    stack<int> s;
+    for (int i = 0; i < n; i++) {
+        while (!s.empty() && a[i] > a[s.top()]) {
+            ans[s.top()] = a[i];
+            s.pop();
         }
-        return arr.back();
+        s.push(i);
     }
-};
+    return ans;
+}
