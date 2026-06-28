@@ -1,16 +1,22 @@
-#include <vector>
 #include <stack>
-using namespace std;
+#include <string>
 
-vector<int> nextGreaterElement(vector<int>& a, int n) {
-    vector<int> ans(n, -1);
-    stack<int> s;
-    for (int i = 0; i < n; i++) {
-        while (!s.empty() && a[i] > a[s.top()]) {
-            ans[s.top()] = a[i];
-            s.pop();
+bool isBalanced(string S) {
+    stack<char> st;
+    for (char c : S) {
+        if (c == '(' || c == '{' || c == '[') {
+            st.push(c);
+        } else {
+            if (st.empty()) return false;
+            char top = st.top();
+            if ((c == ')' && top == '(') || 
+                (c == '}' && top == '{') || 
+                (c == ']' && top == '[')) {
+                st.pop();
+            } else {
+                return false;
+            }
         }
-        s.push(i);
     }
-    return ans;
+    return st.empty();
 }
